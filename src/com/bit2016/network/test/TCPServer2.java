@@ -1,15 +1,19 @@
 package com.bit2016.network.test;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 
-public class TCPServer {
+public class TCPServer2 {
 	private static final int PORT = 5000;
 
 	public static void main(String[] args) {
@@ -34,23 +38,24 @@ public class TCPServer {
 
 			try {
 				// 4 IOStream 받아오기
-				InputStream inputStream = socket.getInputStream();
-				OutputStream outputStream = socket.getOutputStream();
+BufferedReader br =
+new BufferedReader( new InputStreamReader(socket.getInputStream(), "UTF-8") );
+PrintWriter pw =
+new PrintWriter( new OutputStreamWriter( socket.getOutputStream(), "UTF-8"), true );
 				
 				while (true) {
 					// 5. 데이터 읽기
-					byte[] buffer = new byte[256];
-					int readByteCount = inputStream.read(buffer); //block
-					if (readByteCount == -1) {
-						// 정상종료( remote socket close() 불러서 정상적으로 소켓을 닫았다)
-						System.out.println("[server] closed by client");
+					String data = br.readLine();
+					if( data == null ) {
+						System.out.println( "[server] closed by client" );
 						break;
 					}
-					String data = new String(buffer, 0, readByteCount, "UTF-8");
-					System.out.println("[server] received:" + data);
-
+					
+					System.out.println( "[server] received:" + data );
+					
 					// 6. 쓰기
-					outputStream.write(data.getBytes("UTF-8"));
+					pw.println( data );
+					//pw.print( data + "\n" );
 				}
 			} catch ( SocketException ex ) {
 				System.out.println( "[server] abnormal closed by client" );
@@ -77,5 +82,4 @@ public class TCPServer {
 		}
 
 	}
-
 }
