@@ -1,6 +1,8 @@
 package com.bit2016.network.test;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -31,12 +33,37 @@ public class TCPServer {
 			System.out.println(
 				"[server] connected by client[" + remoteHostAddress + ":" + remoteHostPort + "]")	;
 			
-			
-			//4. 데이터 통신
-			
-			//5. 자원정리(소켓 닫기)
-			socket.close();
-			
+			while( true ) {
+				try {
+					//4 IOStream 받아오기
+					InputStream inputStream = socket.getInputStream();
+					OutputStream outputStream = socket.getOutputStream();
+					
+					//5. 데이터 읽기
+					byte[] buffer = new byte[256];
+					int readByteCount = inputStream.read( buffer );
+					if( readByteCount == -1 ) {
+						//정상종료( remote socket close() 불러서 정상적으로 소켓을 닫았다)
+						System.out.println( "[server] coloed by client" );
+						break;
+					} 
+					String data = new String( buffer, 0, readByteCount, "UTF-8" );
+					System.out.println( "[server] received:" + data );
+					
+					//6. 쓰기
+					outputStream.write( data.getBytes( "UTF-8" ) );
+				
+				} catch( IOException ex ) {
+					ex.printStackTrace();
+				} finally {
+					try {
+						//5. 자원정리(소켓 닫기)
+						socket.close();
+					} catch( IOException ex ) {
+						ex.printStackTrace();
+					}
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
