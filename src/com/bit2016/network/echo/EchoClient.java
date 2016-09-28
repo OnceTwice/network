@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Scanner;
 
 public class EchoClient {
@@ -52,6 +53,8 @@ public class EchoClient {
 				//8. 출력
 				System.out.println( "<<" + data );
 			}
+		} catch( SocketException ex ){
+			log( "abnormal closed by server" );
 		} catch( IOException ex ) {
 			log( "error" + ex );
 		} finally {
