@@ -33,7 +33,7 @@ public class RequestHandler extends Thread {
 				
 				// 브라우저가 연결을 끊으면
 				if( line == null ){
-					break;
+					return;
 				}
 				
 				// Header 만 읽음
@@ -47,7 +47,7 @@ public class RequestHandler extends Thread {
 			}	
 
 			consoleLog( request );
-			
+
 			String[] tokens = request.split( " " );
 			if( "GET".equals( tokens[0] ) == true ) {
 				responseStaticResource( outputStream, tokens[1], tokens[2] );
