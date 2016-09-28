@@ -70,7 +70,6 @@ public class RequestHandler extends Thread {
 				if( socket != null && socket.isClosed() == false ) {
 					socket.close();
 				}
-				
 			} catch( IOException ex ) {
 				consoleLog( "error:" + ex );
 			}
