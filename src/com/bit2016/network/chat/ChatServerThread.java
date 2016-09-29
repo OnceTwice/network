@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.List;
 
 public class ChatServerThread extends Thread {
@@ -22,6 +22,9 @@ public class ChatServerThread extends Thread {
 	
 	@Override
 	public void run() {
+		BufferedReader br = null;
+		PrintWriter pw = null;
+		
 		try {
 			//1. print remote socket address
 			InetSocketAddress remoteSocketAddress = 
@@ -33,16 +36,15 @@ public class ChatServerThread extends Thread {
 				"]" );
 			
 			//2. create stream( from Basic Stream )
-			BufferedReader br =
-				new BufferedReader( new InputStreamReader(socket.getInputStream(), "UTF-8") );
-			PrintWriter pw = 
-				new PrintWriter( new OutputStreamWriter( socket.getOutputStream(), "UTF-8"), true );
+			br = new BufferedReader( new InputStreamReader(socket.getInputStream(), "UTF-8") );
+			pw = new PrintWriter( new OutputStreamWriter( socket.getOutputStream(), "UTF-8"), true );
 			
 			//3. processing...
 			while( true ) {
 				String line = br.readLine();
 				if( line == null ) {
-					//doQuit();
+					doQuit( pw );
+					ChatServer.consoleLog( "closed by client" );
 					break;
 				}
 				
@@ -50,16 +52,17 @@ public class ChatServerThread extends Thread {
 				if( "JOIN".equals( tokens[0] ) ) {
 					doJoin(tokens[1], pw );
 				} else if( "MESSAGE".equals( tokens[0] ) ) {
-					//doMessage();
+					doMessage( tokens[1] );
 				} else if( "QUIT".equals( tokens[0] ) ) {
-					//doQuit();
+					doQuit( pw );
+					break;
 				}
-				
 			}
-			
-		} catch (UnsupportedEncodingException e) {
-			ChatServer.consoleLog( "error:" + e );
+		} catch (SocketException e) {
+			doQuit( pw );
+			ChatServer.consoleLog( "abnormal closed by client" );
 		} catch (IOException e) {
+			doQuit( pw );
 			ChatServer.consoleLog( "error:" + e );
 		} finally {
 			try {
@@ -71,6 +74,17 @@ public class ChatServerThread extends Thread {
 				ChatServer.consoleLog( "error:" + e );
 			}
 		}
+	}
+	
+	private void doQuit( PrintWriter printWriter ) {
+		deletePrintWriter( printWriter );
+		if(name != null ) {
+			broadcastMessage( name + "님이 퇴장 하였습니다." );
+		}
+	}
+	
+	private void doMessage( String message ) {
+		broadcastMessage( name + ":" + message );
 	}
 	
 	private void doJoin(String name, PrintWriter printWriter ){
