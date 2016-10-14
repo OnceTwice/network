@@ -54,6 +54,7 @@ public class ChatClient {
 				
 				if( "quit".equals( message ) ) {
 					pw.println( "QUIT" );
+					//System.exit(0);
 					break;
 				}
 				
